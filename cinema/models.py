@@ -1,3 +1,5 @@
+from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from django.db import models
 
 class CinemaHall(models.Model):
@@ -56,3 +58,68 @@ class MovieSession(models.Model):
 
     def __str__(self) -> str:
         return f"{self.movie.title} {self.show_time}"
+
+
+class Order(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(
+        get_user_model(),
+        on_delete=models.CASCADE,
+        related_name="orders"
+    )
+
+    def __str__(self) -> str:
+        return str(self.created_at)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+
+class Ticket(models.Model):
+    movie_session = models.ForeignKey(
+        MovieSession,
+        on_delete=models.CASCADE,
+        related_name="tickets"
+    )
+    order = models.ForeignKey(
+        Order,
+        on_delete=models.CASCADE,
+        related_name="tickets"
+    )
+    row = models.IntegerField()
+    seat = models.IntegerField()
+
+    @classmethod
+    def validate_seat(cls, row, seat, cinema_hall):
+        errors = {}
+
+        if not (1 <= row <= cinema_hall.rows):
+            errors["row"] = f"Row must be between 1 and {cinema_hall.rows}."
+
+        if not (1 <= seat <= cinema_hall.seats_in_row):
+            errors["seat"] = (
+                f"Seat must be between 1 and {cinema_hall.seats_in_row}."
+            )
+
+        if errors:
+            raise ValidationError(errors)
+
+    def clean(self):
+        self.validate_seat(
+            self.row,
+            self.seat,
+            self.movie_session.cinema_hall
+        )
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        return super().save(*args, **kwargs)
+
+    def __str__(self):
+        return (
+            f"{str(self.movie_session)} (row: {self.row}, seat: {self.seat})"
+        )
+
+    class Meta:
+        unique_together = ("movie_session", "row", "seat")
+        ordering = ("row", "seat")
