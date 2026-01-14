@@ -20,7 +20,6 @@ class OrderAdmin(admin.ModelAdmin):
     inlines = [TicketInLine]
 
 
-
 admin.site.register(CinemaHall)
 admin.site.register(Genre)
 admin.site.register(Actor)
