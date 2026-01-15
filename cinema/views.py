@@ -1,13 +1,16 @@
 from django.db.models import F, Count
 from rest_framework import viewsets
+from rest_framework.authentication import BasicAuthentication
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAuthenticated
 
 from cinema.models import (
     CinemaHall,
     Genre,
     Actor,
     Movie,
-    MovieSession, Order
+    MovieSession,
+    Order
 )
 from cinema.serializers import (
     CinemaHallSerializer,
@@ -23,26 +26,35 @@ from cinema.serializers import (
     OrderListSerializer,
     OrderDetailSerializer,
 )
+from cinema.permissions import IsAdminAllOrIsAuthenticatedReadOnly
 
 
 class CinemaHallViewSet(viewsets.ModelViewSet):
     queryset = CinemaHall.objects.all()
     serializer_class = CinemaHallSerializer
+    authentication_classes = [BasicAuthentication]
+    permission_classes = [IsAdminAllOrIsAuthenticatedReadOnly]
 
 
 class GenreViewSet(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
+    authentication_classes = [BasicAuthentication]
+    permission_classes = [IsAdminAllOrIsAuthenticatedReadOnly]
 
 
 class ActorViewSet(viewsets.ModelViewSet):
     queryset = Actor.objects.all()
     serializer_class = ActorSerializer
+    authentication_classes = [BasicAuthentication]
+    permission_classes = [IsAdminAllOrIsAuthenticatedReadOnly]
 
 
 class MovieViewSet(viewsets.ModelViewSet):
     queryset = Movie.objects.all()
     serializer_class = MovieSerializer
+    authentication_classes = [BasicAuthentication]
+    permission_classes = [IsAdminAllOrIsAuthenticatedReadOnly]
 
     def get_queryset(self):
         queryset = self.queryset
@@ -77,6 +89,8 @@ class MovieViewSet(viewsets.ModelViewSet):
 class MovieSessionViewSet(viewsets.ModelViewSet):
     queryset = MovieSession.objects.all()
     serializer_class = MovieSessionSerializer
+    authentication_classes = [BasicAuthentication]
+    permission_classes = [IsAdminAllOrIsAuthenticatedReadOnly]
 
     def get_queryset(self):
         queryset = self.queryset
@@ -122,6 +136,8 @@ class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
     pagination_class = OrderPagination
+    authentication_classes = [BasicAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         queryset = self.queryset.filter(user=self.request.user)
