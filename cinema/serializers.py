@@ -80,11 +80,6 @@ class MovieSessionListSerializer(MovieSessionSerializer):
         )
 
 
-class MovieSessionDetailSerializer(MovieSessionSerializer):
-    movie = MovieListSerializer(read_only=True)
-    cinema_hall = CinemaHallSerializer(read_only=True)
-
-
 class TicketSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         Ticket.validate_seat(
@@ -101,6 +96,22 @@ class TicketSerializer(serializers.ModelSerializer):
 
 class TicketListSerializer(TicketSerializer):
     movie_session = MovieSessionListSerializer(many=False, read_only=True)
+
+
+class TicketSeatsSerializer(TicketSerializer):
+    class Meta:
+        model = Ticket
+        fields = ("row", "seat")
+
+
+class MovieSessionDetailSerializer(MovieSessionSerializer):
+    movie = MovieListSerializer(read_only=True)
+    cinema_hall = CinemaHallSerializer(read_only=True)
+    taken_places = TicketSeatsSerializer(source="tickets", many=True, read_only=True)
+
+    class Meta:
+        model = MovieSession
+        fields = ("id", "show_time", "movie", "cinema_hall", "taken_places")
 
 
 class TicketDetailSerializer(TicketSerializer):
