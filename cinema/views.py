@@ -24,7 +24,6 @@ from cinema.serializers import (
     MovieSessionListSerializer,
     MovieSessionDetailSerializer,
     OrderListSerializer,
-    OrderDetailSerializer,
 )
 from cinema.permissions import IsAdminAllOrIsAuthenticatedReadOnly
 
@@ -163,14 +162,10 @@ class OrderViewSet(
     def get_queryset(self):
         queryset = self.queryset.filter(user=self.request.user)
 
-        if self.action in ("list", "retrieve"):
+        if self.action == "list":
             queryset = queryset.prefetch_related(
-                "tickets",
-                "tickets__movie_session",
-                "tickets__movie_session__cinema_hall",
                 "tickets__movie_session__movie",
-                "tickets__movie_session__movie__genres",
-                "tickets__movie_session__movie__actors",
+                "tickets__movie_session__cinema_hall"
             )
 
         return queryset
@@ -178,8 +173,6 @@ class OrderViewSet(
     def get_serializer_class(self):
         if self.action == "list":
             return OrderListSerializer
-        if self.action == "retrieve":
-            return OrderDetailSerializer
 
         return OrderSerializer
 
