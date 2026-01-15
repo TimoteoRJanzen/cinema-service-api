@@ -1,5 +1,5 @@
 from django.db.models import F, Count
-from rest_framework import viewsets
+from rest_framework import viewsets, mixins
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
@@ -29,28 +29,45 @@ from cinema.serializers import (
 from cinema.permissions import IsAdminAllOrIsAuthenticatedReadOnly
 
 
-class CinemaHallViewSet(viewsets.ModelViewSet):
+class CinemaHallViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    viewsets.GenericViewSet
+):
     queryset = CinemaHall.objects.all()
     serializer_class = CinemaHallSerializer
     authentication_classes = [BasicAuthentication]
     permission_classes = [IsAdminAllOrIsAuthenticatedReadOnly]
 
 
-class GenreViewSet(viewsets.ModelViewSet):
+class GenreViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    viewsets.GenericViewSet
+):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     authentication_classes = [BasicAuthentication]
     permission_classes = [IsAdminAllOrIsAuthenticatedReadOnly]
 
 
-class ActorViewSet(viewsets.ModelViewSet):
+class ActorViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    viewsets.GenericViewSet
+):
     queryset = Actor.objects.all()
     serializer_class = ActorSerializer
     authentication_classes = [BasicAuthentication]
     permission_classes = [IsAdminAllOrIsAuthenticatedReadOnly]
 
 
-class MovieViewSet(viewsets.ModelViewSet):
+class MovieViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    viewsets.GenericViewSet
+):
     queryset = Movie.objects.all()
     serializer_class = MovieSerializer
     authentication_classes = [BasicAuthentication]
@@ -132,7 +149,11 @@ class OrderPagination(PageNumberPagination):
     page_size_query_param = "page_size"
     max_page_size = 20
 
-class OrderViewSet(viewsets.ModelViewSet):
+class OrderViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    viewsets.GenericViewSet
+):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
     pagination_class = OrderPagination
