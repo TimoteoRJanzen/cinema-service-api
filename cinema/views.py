@@ -39,8 +39,14 @@ class ActorViewSet(viewsets.ModelViewSet):
 
 
 class MovieViewSet(viewsets.ModelViewSet):
-    queryset = Movie.objects.prefetch_related("genres", "actors")
+    queryset = Movie.objects.all()
     serializer_class = MovieSerializer
+
+    def get_queryset(self):
+        queryset = self.queryset
+        if self.action in ("list", "retrieve"):
+            queryset = queryset.prefetch_related("genres", "actors")
+        return queryset
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -51,14 +57,20 @@ class MovieViewSet(viewsets.ModelViewSet):
 
 
 class MovieSessionViewSet(viewsets.ModelViewSet):
-    queryset = MovieSession.objects.select_related(
-        "movie",
-        "cinema_hall"
-    ).prefetch_related(
-        "movie__genres",
-        "movie__actors",
-    )
+    queryset = MovieSession.objects.all()
     serializer_class = MovieSessionSerializer
+
+    def get_queryset(self):
+        queryset = self.queryset
+        if self.action in ("list", "retrieve"):
+            queryset = queryset.select_related(
+                "movie",
+                "cinema_hall"
+            ).prefetch_related(
+                "movie__genres",
+                "movie__actors",
+            )
+        return queryset
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -69,18 +81,23 @@ class MovieSessionViewSet(viewsets.ModelViewSet):
 
 
 class OrderViewSet(viewsets.ModelViewSet):
-    queryset = Order.objects.prefetch_related(
-        "tickets",
-        "tickets__movie_session",
-        "tickets__movie_session__cinema_hall",
-        "tickets__movie_session__movie",
-        "tickets__movie_session__movie__genres",
-        "tickets__movie_session__movie__actors",
-    )
+    queryset = Order.objects.all()
     serializer_class = OrderSerializer
 
     def get_queryset(self):
-        return self.queryset.filter(user=self.request.user)
+        queryset = self.queryset.filter(user=self.request.user)
+
+        if self.action in ("list", "retrieve"):
+            queryset = queryset.prefetch_related(
+                "tickets",
+                "tickets__movie_session",
+                "tickets__movie_session__cinema_hall",
+                "tickets__movie_session__movie",
+                "tickets__movie_session__movie__genres",
+                "tickets__movie_session__movie__actors",
+            )
+
+        return queryset
 
     def get_serializer_class(self):
         if self.action == "list":
