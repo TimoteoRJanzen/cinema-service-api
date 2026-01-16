@@ -1,6 +1,5 @@
 from django.db.models import F, Count
 from rest_framework import viewsets, mixins, status
-from rest_framework.authentication import BasicAuthentication
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
@@ -38,7 +37,6 @@ class CinemaHallViewSet(
 ):
     queryset = CinemaHall.objects.all()
     serializer_class = CinemaHallSerializer
-    authentication_classes = [BasicAuthentication]
     permission_classes = [IsAdminAllOrIsAuthenticatedReadOnly]
 
 
@@ -49,7 +47,6 @@ class GenreViewSet(
 ):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    authentication_classes = [BasicAuthentication]
     permission_classes = [IsAdminAllOrIsAuthenticatedReadOnly]
 
 
@@ -60,7 +57,6 @@ class ActorViewSet(
 ):
     queryset = Actor.objects.all()
     serializer_class = ActorSerializer
-    authentication_classes = [BasicAuthentication]
     permission_classes = [IsAdminAllOrIsAuthenticatedReadOnly]
 
 
@@ -72,7 +68,6 @@ class MovieViewSet(
 ):
     queryset = Movie.objects.all()
     serializer_class = MovieSerializer
-    authentication_classes = [BasicAuthentication]
     permission_classes = [IsAdminAllOrIsAuthenticatedReadOnly]
 
     def get_queryset(self):
@@ -123,7 +118,6 @@ class MovieViewSet(
 class MovieSessionViewSet(viewsets.ModelViewSet):
     queryset = MovieSession.objects.all()
     serializer_class = MovieSessionSerializer
-    authentication_classes = [BasicAuthentication]
     permission_classes = [IsAdminAllOrIsAuthenticatedReadOnly]
 
     def get_queryset(self):
@@ -174,7 +168,6 @@ class OrderViewSet(
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
     pagination_class = OrderPagination
-    authentication_classes = [BasicAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get_throttles(self):
