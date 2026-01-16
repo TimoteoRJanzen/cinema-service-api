@@ -1,4 +1,6 @@
 from django.db.models import F, Count
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -59,7 +61,28 @@ class ActorViewSet(
     serializer_class = ActorSerializer
     permission_classes = [IsAdminAllOrIsAuthenticatedReadOnly]
 
-
+@extend_schema(
+    parameters=[
+        OpenApiParameter(
+            name="title",
+            type=OpenApiTypes.STR,
+            description="Filter movies by title"
+                        " (case-insensitive, partial match)"
+        ),
+        OpenApiParameter(
+            name="genres",
+            type=OpenApiTypes.STR,
+            description="Filter movies by genre ids"
+                        " (comma separated). Example: 1,2,3"
+        ),
+        OpenApiParameter(
+            name="actors",
+            type=OpenApiTypes.STR,
+            description="Filter movies by actor ids"
+                        " (comma separated). Example: 4,5"
+        )
+    ]
+)
 class MovieViewSet(
     mixins.ListModelMixin,
     mixins.CreateModelMixin,
@@ -114,7 +137,20 @@ class MovieViewSet(
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
-
+@extend_schema(
+    parameters=[
+        OpenApiParameter(
+            name="movie",
+            type=OpenApiTypes.INT,
+            description="Filter movie session by movie id"
+        ),
+        OpenApiParameter(
+            name="date",
+            type=OpenApiTypes.DATE,
+            description="Filter movie session by date (YYYY-MM-DD)"
+        )
+    ]
+)
 class MovieSessionViewSet(viewsets.ModelViewSet):
     queryset = MovieSession.objects.all()
     serializer_class = MovieSessionSerializer
