@@ -28,6 +28,7 @@ from cinema.serializers import (
     OrderListSerializer, MovieImageSerializer,
 )
 from cinema.permissions import IsAdminAllOrIsAuthenticatedReadOnly
+from cinema.throttles import OrderCreateThrottle
 
 
 class CinemaHallViewSet(
@@ -175,6 +176,11 @@ class OrderViewSet(
     pagination_class = OrderPagination
     authentication_classes = [BasicAuthentication]
     permission_classes = [IsAuthenticated]
+
+    def get_throttles(self):
+        if self.action == "create":
+            return [OrderCreateThrottle()]
+        return super().get_throttles()
 
     def get_queryset(self):
         queryset = self.queryset.filter(user=self.request.user)
