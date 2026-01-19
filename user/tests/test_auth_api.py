@@ -6,12 +6,11 @@ from rest_framework.test import APITestCase
 
 USER_ME_URL = reverse("user:manage_user")
 
+
 class AuthTests(APITestCase):
     def setUp(self):
         self.user = get_user_model().objects.create_user(
-            username="teste",
-            email="teste@teste.com",
-            password="teste123"
+            username="teste", email="teste@teste.com", password="teste123"
         )
 
     def test_unauthenticated_user_cannot_access_me(self):

@@ -3,28 +3,22 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from cinema.models import (
-    Genre,
-    Actor
-)
+from cinema.models import Genre, Actor
 
 
 MOVIE_URL = reverse("cinema:movie-list")
+
 
 class PermissionsTests(APITestCase):
 
     def setUp(self):
 
         self.admin = get_user_model().objects.create_superuser(
-            username="admin",
-            email="admin@admin.com",
-            password="admin123"
+            username="admin", email="admin@admin.com", password="admin123"
         )
 
         self.user = get_user_model().objects.create_user(
-            username="teste",
-            email="teste@teste.com",
-            password="teste123"
+            username="teste", email="teste@teste.com", password="teste123"
         )
 
         genre = Genre.objects.create(name="Teste")
@@ -35,7 +29,7 @@ class PermissionsTests(APITestCase):
             "description": "test",
             "duration": 180,
             "genres": [genre.id],
-            "actors": [actor.id]
+            "actors": [actor.id],
         }
 
     def test_unauthenticated_user_cannot_access_movies(self):

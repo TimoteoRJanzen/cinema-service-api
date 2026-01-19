@@ -40,8 +40,10 @@ class Actor(models.Model):
 
 
 def movie_image_path(instance, filename):
-    filename = (f"{slugify(instance.title)}-{uuid.uuid4()}"
-                + pathlib.Path(filename).suffix)
+    filename = (
+        f"{slugify(instance.title)}-{uuid.uuid4()}"
+        + pathlib.Path(filename).suffix
+    )
     return pathlib.Path("uploads/movies/") / pathlib.Path(filename)
 
 
@@ -62,8 +64,12 @@ class Movie(models.Model):
 
 class MovieSession(models.Model):
     show_time = models.DateTimeField()
-    movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name="movie_sessions")
-    cinema_hall = models.ForeignKey(CinemaHall, on_delete=models.CASCADE, related_name="movie_sessions")
+    movie = models.ForeignKey(
+        Movie, on_delete=models.CASCADE, related_name="movie_sessions"
+    )
+    cinema_hall = models.ForeignKey(
+        CinemaHall, on_delete=models.CASCADE, related_name="movie_sessions"
+    )
 
     class Meta:
         ordering = ["-show_time"]
@@ -75,9 +81,7 @@ class MovieSession(models.Model):
 class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(
-        get_user_model(),
-        on_delete=models.CASCADE,
-        related_name="orders"
+        get_user_model(), on_delete=models.CASCADE, related_name="orders"
     )
 
     def __str__(self) -> str:
@@ -89,9 +93,7 @@ class Order(models.Model):
 
 class Ticket(models.Model):
     movie_session = models.ForeignKey(
-        MovieSession,
-        on_delete=models.CASCADE,
-        related_name="tickets"
+        MovieSession, on_delete=models.CASCADE, related_name="tickets"
     )
     order = models.ForeignKey(
         Order,
@@ -106,31 +108,26 @@ class Ticket(models.Model):
         errors = {}
 
         if not (1 <= row <= cinema_hall.rows):
-            errors["row"] = f"Row must be between 1 and {cinema_hall.rows}."
+            errors["row"] = (f"Row must be between 1 and "
+                             f"{cinema_hall.rows}.")
 
         if not (1 <= seat <= cinema_hall.seats_in_row):
-            errors["seat"] = (
-                f"Seat must be between 1 and {cinema_hall.seats_in_row}."
-            )
+            errors["seat"] = (f"Seat must be between 1 and "
+                              f"{cinema_hall.seats_in_row}.")
 
         if errors:
             raise ValidationError(errors)
 
     def clean(self):
-        self.validate_seat(
-            self.row,
-            self.seat,
-            self.movie_session.cinema_hall
-        )
+        self.validate_seat(self.row, self.seat, self.movie_session.cinema_hall)
 
     def save(self, *args, **kwargs):
         self.full_clean()
         return super().save(*args, **kwargs)
 
     def __str__(self):
-        return (
-            f"{str(self.movie_session)} (row: {self.row}, seat: {self.seat})"
-        )
+        return (f"{str(self.movie_session)} "
+                f"(row: {self.row}, seat: {self.seat})")
 
     class Meta:
         unique_together = ("movie_session", "row", "seat")

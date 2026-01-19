@@ -3,24 +3,26 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from cinema.models import Movie, Actor, Genre, MovieSession, CinemaHall, Order
+from cinema.models import (
+    Movie,
+    MovieSession,
+    CinemaHall,
+    Order
+)
 
 ORDER_URL = reverse("cinema:order-list")
+
 
 class OrderTests(APITestCase):
 
     def setUp(self):
 
         self.user = get_user_model().objects.create_user(
-            username="teste",
-            email="teste@teste.com",
-            password="teste123"
+            username="teste", email="teste@teste.com", password="teste123"
         )
 
         self.other_user = get_user_model().objects.create_user(
-            username="other",
-            email="other@other.com",
-            password="other123"
+            username="other", email="other@other.com", password="other123"
         )
 
         movie = Movie.objects.create(
@@ -42,11 +44,13 @@ class OrderTests(APITestCase):
         )
 
         self.data = {
-            "tickets": [{
-                "row": 1,
-                "seat": 1,
-                "movie_session": self.movie_session.id
-            }]
+            "tickets": [
+                {
+                    "row": 1,
+                    "seat": 1,
+                    "movie_session": self.movie_session.id
+                }
+            ]
         }
 
     def test_unauthenticated_user_cannot_access_orders(self):
@@ -65,4 +69,3 @@ class OrderTests(APITestCase):
         self.client.force_authenticate(user=self.user)
         response = self.client.get(ORDER_URL)
         self.assertEqual(len(response.data["results"]), 1)
-

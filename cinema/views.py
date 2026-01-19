@@ -7,14 +7,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 
-from cinema.models import (
-    CinemaHall,
-    Genre,
-    Actor,
-    Movie,
-    MovieSession,
-    Order
-)
+from cinema.models import CinemaHall, Genre, Actor, Movie, MovieSession, Order
 from cinema.serializers import (
     CinemaHallSerializer,
     GenreSerializer,
@@ -26,16 +19,15 @@ from cinema.serializers import (
     MovieDetailSerializer,
     MovieSessionListSerializer,
     MovieSessionDetailSerializer,
-    OrderListSerializer, MovieImageSerializer,
+    OrderListSerializer,
+    MovieImageSerializer,
 )
 from cinema.permissions import IsAdminAllOrIsAuthenticatedReadOnly
 from cinema.throttles import OrderCreateThrottle
 
 
 class CinemaHallViewSet(
-    mixins.ListModelMixin,
-    mixins.CreateModelMixin,
-    viewsets.GenericViewSet
+    mixins.ListModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet
 ):
     queryset = CinemaHall.objects.all()
     serializer_class = CinemaHallSerializer
@@ -43,9 +35,7 @@ class CinemaHallViewSet(
 
 
 class GenreViewSet(
-    mixins.ListModelMixin,
-    mixins.CreateModelMixin,
-    viewsets.GenericViewSet
+    mixins.ListModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet
 ):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
@@ -53,13 +43,12 @@ class GenreViewSet(
 
 
 class ActorViewSet(
-    mixins.ListModelMixin,
-    mixins.CreateModelMixin,
-    viewsets.GenericViewSet
+    mixins.ListModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet
 ):
     queryset = Actor.objects.all()
     serializer_class = ActorSerializer
     permission_classes = [IsAdminAllOrIsAuthenticatedReadOnly]
+
 
 @extend_schema(
     parameters=[
@@ -67,27 +56,27 @@ class ActorViewSet(
             name="title",
             type=OpenApiTypes.STR,
             description="Filter movies by title"
-                        " (case-insensitive, partial match)"
+                        " (case-insensitive, partial match)",
         ),
         OpenApiParameter(
             name="genres",
             type=OpenApiTypes.STR,
             description="Filter movies by genre ids"
-                        " (comma separated). Example: 1,2,3"
+                        " (comma separated). Example: 1,2,3",
         ),
         OpenApiParameter(
             name="actors",
             type=OpenApiTypes.STR,
             description="Filter movies by actor ids"
-                        " (comma separated). Example: 4,5"
-        )
+                        " (comma separated). Example: 4,5",
+        ),
     ]
 )
 class MovieViewSet(
     mixins.ListModelMixin,
     mixins.CreateModelMixin,
     mixins.RetrieveModelMixin,
-    viewsets.GenericViewSet
+    viewsets.GenericViewSet,
 ):
     queryset = Movie.objects.all()
     serializer_class = MovieSerializer
@@ -125,9 +114,10 @@ class MovieViewSet(
         return MovieSerializer
 
     @action(
-        methods=["POST","DELETE"],
+        methods=["POST", "DELETE"],
         detail=True,
-        permission_classes=[IsAdminUser])
+        permission_classes=[IsAdminUser]
+    )
     def upload_image(self, request, pk=None):
         movie = self.get_object()
         serializer = self.get_serializer(movie, data=request.data)
@@ -137,18 +127,19 @@ class MovieViewSet(
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
+
 @extend_schema(
     parameters=[
         OpenApiParameter(
             name="movie",
             type=OpenApiTypes.INT,
-            description="Filter movie session by movie id"
+            description="Filter movie session by movie id",
         ),
         OpenApiParameter(
             name="date",
             type=OpenApiTypes.DATE,
-            description="Filter movie session by date (YYYY-MM-DD)"
-        )
+            description="Filter movie session by date (YYYY-MM-DD)",
+        ),
     ]
 )
 class MovieSessionViewSet(viewsets.ModelViewSet):
@@ -159,18 +150,19 @@ class MovieSessionViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = self.queryset
         if self.action in ("list", "retrieve"):
-            queryset = queryset.select_related(
-                "movie",
-                "cinema_hall"
-            ).prefetch_related(
-                "movie__genres",
-                "movie__actors",
-            ).annotate(
-            tickets_available=(
-                F("cinema_hall__rows") * F("cinema_hall__seats_in_row")
-                - Count("tickets")
+            queryset = (
+                queryset.select_related("movie", "cinema_hall")
+                .prefetch_related(
+                    "movie__genres",
+                    "movie__actors",
+                )
+                .annotate(
+                    tickets_available=(
+                        F("cinema_hall__rows") * F("cinema_hall__seats_in_row")
+                        - Count("tickets")
+                    )
+                )
             )
-        )
 
         movie_id = self.request.query_params.get("movie")
         date = self.request.query_params.get("date")
@@ -196,10 +188,9 @@ class OrderPagination(PageNumberPagination):
     page_size_query_param = "page_size"
     max_page_size = 20
 
+
 class OrderViewSet(
-    mixins.ListModelMixin,
-    mixins.CreateModelMixin,
-    viewsets.GenericViewSet
+    mixins.ListModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet
 ):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
